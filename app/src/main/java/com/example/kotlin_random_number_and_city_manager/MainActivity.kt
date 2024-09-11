@@ -1,5 +1,6 @@
 package com.example.kotlin_random_number_and_city_manager
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +47,10 @@ fun Menu() {
     val showGameOverDialog = remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("GamePreferences", Context.MODE_PRIVATE)
+    val highestScore = remember { mutableStateOf(sharedPreferences.getInt("highestScore", 0)) }
 
     Column(
         modifier = Modifier
@@ -83,6 +89,13 @@ fun Menu() {
                     onWrongGuess = {
                         scope.launch {
                             snackbarHostState.showSnackbar("Incorrecto, intenta de nuevo", duration = SnackbarDuration.Short)
+                        }
+                    },
+                    highestScore = highestScore,
+                    saveHighestScore = { newScore ->
+                        with(sharedPreferences.edit()) {
+                            putInt("highestScore", newScore)
+                            apply()
                         }
                     }
                 )
@@ -165,48 +178,67 @@ fun GameModule(
     userGuess: MutableState<TextFieldValue>,
     onGameOver: () -> Unit,
     onCorrectGuess: () -> Unit,
-    onWrongGuess: () -> Unit
+    onWrongGuess: () -> Unit,
+    highestScore: MutableState<Int>,
+    saveHighestScore: (Int) -> Unit
 ) {
-    Text(
-        text = "Puntaje: ${score.value}",
-        fontSize = 30.sp,
-        lineHeight = 50.sp,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.padding(bottom = 50.dp)
-    )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Puntaje: ${score.value}",
+            fontSize = 30.sp,
+            lineHeight = 50.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 10.dp)
+        )
 
-    Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Puntaje más alto: ${highestScore.value}",
+            fontSize = 20.sp,
+            lineHeight = 30.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 50.dp)
+        )
 
-    OutlinedTextField(
-        value = userGuess.value,
-        onValueChange = { userGuess.value = it },
-        label = { Text("Ingrese un número") },
-        modifier = Modifier
-            .width(200.dp)
-    )
+        OutlinedTextField(
+            value = userGuess.value,
+            onValueChange = { userGuess.value = it },
+            label = { Text("Ingrese un número") },
+            modifier = Modifier
+                .width(200.dp)
+        )
 
-    Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-    ModuleButton("Adivinar", onClick = {
-        val guess = userGuess.value.text.toIntOrNull()
-        if (guess != null && guess in 1..5) {
-            if (guess == randomNumber.value) {
-                score.value += 10
-                attempts.value = 0
-                randomNumber.value = Random.nextInt(1, 6)
-                onCorrectGuess() // Muestra mensaje de acierto
-            } else {
-                attempts.value += 1
-                onWrongGuess() // Muestra mensaje de fallo
-                if (attempts.value == 5) {
-                    score.value = 0
+        ModuleButton("Adivinar", onClick = {
+            val guess = userGuess.value.text.toIntOrNull()
+            if (guess != null && guess in 1..5) {
+                if (guess == randomNumber.value) {
+                    score.value += 10
                     attempts.value = 0
                     randomNumber.value = Random.nextInt(1, 6)
-                    onGameOver() // Llama a la función de fin de juego
+                    onCorrectGuess()
+
+                    if (score.value > highestScore.value) {
+                        highestScore.value = score.value
+                        saveHighestScore(score.value)
+                    }
+                } else {
+                    attempts.value += 1
+                    onWrongGuess()
+                    if (attempts.value == 5) {
+                        score.value = 0
+                        attempts.value = 0
+                        randomNumber.value = Random.nextInt(1, 6)
+                        onGameOver()
+                    }
                 }
             }
-        }
-    })
+        })
+    }
 }
 
 fun resetGame(

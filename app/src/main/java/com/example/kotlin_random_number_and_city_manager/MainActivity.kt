@@ -18,6 +18,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.example.kotlin_random_number_and_city_manager.ui.theme.KotlinrandomnumberandcitymanagerTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
@@ -40,6 +42,9 @@ fun Menu() {
     val attempts = remember { mutableStateOf(0) }
     val randomNumber = remember { mutableStateOf(Random.nextInt(1, 6)) }
     val userGuess = remember { mutableStateOf(TextFieldValue("")) }
+    val showGameOverDialog = remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -66,7 +71,20 @@ fun Menu() {
                     score = score,
                     attempts = attempts,
                     randomNumber = randomNumber,
-                    userGuess = userGuess
+                    userGuess = userGuess,
+                    onGameOver = {
+                        showGameOverDialog.value = true
+                    },
+                    onCorrectGuess = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("¡Correcto!", duration = SnackbarDuration.Short)
+                        }
+                    },
+                    onWrongGuess = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Incorrecto, intenta de nuevo", duration = SnackbarDuration.Short)
+                        }
+                    }
                 )
             }
 
@@ -78,7 +96,33 @@ fun Menu() {
                 resetGame(score, attempts, randomNumber)
             })
         }
+
+        if (showGameOverDialog.value) {
+            AlertDialog(
+                onDismissRequest = { showGameOverDialog.value = false },
+                title = { Text("Fin del juego") },
+                text = { Text("Has fallado 5 veces seguidas. Tu puntaje ha sido reiniciado.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showGameOverDialog.value = false
+                            selectedModule.value = "Seleccione un Módulo"
+                            buttonsVisible.value = true
+                            resetGame(score, attempts, randomNumber)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = White
+                        )
+                    ) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
     }
+
+    SnackbarHost(hostState = snackbarHostState)
 }
 
 @Composable
@@ -118,7 +162,10 @@ fun GameModule(
     score: MutableState<Int>,
     attempts: MutableState<Int>,
     randomNumber: MutableState<Int>,
-    userGuess: MutableState<TextFieldValue>
+    userGuess: MutableState<TextFieldValue>,
+    onGameOver: () -> Unit,
+    onCorrectGuess: () -> Unit,
+    onWrongGuess: () -> Unit
 ) {
     Text(
         text = "Puntaje: ${score.value}",
@@ -147,12 +194,15 @@ fun GameModule(
                 score.value += 10
                 attempts.value = 0
                 randomNumber.value = Random.nextInt(1, 6)
+                onCorrectGuess() // Muestra mensaje de acierto
             } else {
                 attempts.value += 1
+                onWrongGuess() // Muestra mensaje de fallo
                 if (attempts.value == 5) {
                     score.value = 0
                     attempts.value = 0
                     randomNumber.value = Random.nextInt(1, 6)
+                    onGameOver() // Llama a la función de fin de juego
                 }
             }
         }

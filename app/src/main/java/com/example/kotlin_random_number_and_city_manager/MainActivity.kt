@@ -35,6 +35,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+@Composable
+fun CityModuleButton(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .width(300.dp)
+            .height(60.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Black,
+            contentColor = Color.White
+        )
+    ) {
+        Text(
+            text = text,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
 
 @Composable
 fun Menu() {
@@ -103,7 +122,45 @@ fun Menu() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            ModuleButton("Volver al menú", onClick = {
+            CityModuleButton("Cargar una ciudad capital", onClick = {
+                selectedModule.value = "Cargar una ciudad capital"
+                buttonsVisible.value = true
+                resetGame(score, attempts, randomNumber)
+            })
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CityModuleButton("Consultar ciudad por nombre" , onClick = {
+                selectedModule.value = "Consultar ciudad por nombre"
+                buttonsVisible.value = true
+                resetGame(score, attempts, randomNumber)
+            })
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CityModuleButton("Borrar ciudad por su nombre", onClick = {
+                selectedModule.value = "Borrar ciudad por su nombre"
+                buttonsVisible.value = true
+                resetGame(score, attempts, randomNumber)
+            })
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CityModuleButton("Borrar todas las ciudades de un pais", onClick = {
+                selectedModule.value = "Borrar todas las ciudades de un pais"
+                buttonsVisible.value = true
+                resetGame(score, attempts, randomNumber)
+            })
+
+            Spacer(modifier = Modifier.height(16.dp))
+            CityModuleButton("Modificar la población de una ciudad", onClick = {
+                selectedModule.value = "Modificar la población de una ciudad"
+                buttonsVisible.value = true
+                resetGame(score, attempts, randomNumber)
+            })
+
+            Spacer(modifier = Modifier.height(16.dp))
+            CityModuleButton("Volver al menú", onClick = {
                 selectedModule.value = "Seleccione un Módulo"
                 buttonsVisible.value = true
                 resetGame(score, attempts, randomNumber)

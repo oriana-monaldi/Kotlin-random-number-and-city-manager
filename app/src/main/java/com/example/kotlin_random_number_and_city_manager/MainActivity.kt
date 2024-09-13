@@ -35,13 +35,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 @Composable
 fun CityModuleButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .width(300.dp)
-            .height(60.dp),
+            .height(55.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black,
             contentColor = Color.White
@@ -75,6 +76,7 @@ fun Menu() {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
+
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

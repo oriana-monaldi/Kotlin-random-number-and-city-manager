@@ -22,6 +22,9 @@ import androidx.compose.ui.unit.sp
 import com.example.kotlin_random_number_and_city_manager.ui.theme.KotlinrandomnumberandcitymanagerTheme
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import android.content.ContentValues
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,11 +106,12 @@ fun Menu() {
     val sharedPreferences = context.getSharedPreferences("GamePreferences", Context.MODE_PRIVATE)
     val highestScore = remember { mutableStateOf(sharedPreferences.getInt("highestScore", 0)) }
 
+    val dbHelper = remember { CityDatabaseHelper(context) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -158,41 +162,8 @@ fun Menu() {
                     selectedModule.value = "Seleccione un Módulo"
                     buttonsVisible.value = true
                 })
-            }else{
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CityModuleButton("Cargar una ciudad capital", onClick = {
-                    selectedModule.value = "Cargar una ciudad capital"
-                    buttonsVisible.value = true
-                })
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CityModuleButton("Consultar ciudad por nombre" , onClick = {
-                    selectedModule.value = "Consultar ciudad por nombre"
-                    buttonsVisible.value = true
-                })
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CityModuleButton("Borrar ciudad por su nombre", onClick = {
-                    selectedModule.value = "Borrar ciudad por su nombre"
-                    buttonsVisible.value = true
-                })
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CityModuleButton("Borrar todas las ciudades de un pais", onClick = {
-                    selectedModule.value = "Borrar todas las ciudades de un pais"
-                    buttonsVisible.value = true
-                })
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CityModuleButton("Modificar la población de una ciudad", onClick = {
-                    selectedModule.value = "Modificar la población de una ciudad"
-                    buttonsVisible.value = true
-                })
+            } else {
+                CityModule(dbHelper, snackbarHostState)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -201,7 +172,6 @@ fun Menu() {
                     buttonsVisible.value = true
                 })
             }
-
         }
 
         if (showGameOverDialog.value) {
@@ -312,6 +282,203 @@ fun resetGame(
     attempts.value = 0
     randomNumber.value = Random.nextInt(1, 6)
 }
+
+@Composable
+fun CityModule(dbHelper: CityDatabaseHelper, snackbarHostState: SnackbarHostState) {
+    val scope = rememberCoroutineScope()
+    var cityName by remember { mutableStateOf("") }
+    var countryName by remember { mutableStateOf("") }
+    var population by remember { mutableStateOf("") }
+    var operationResult by remember { mutableStateOf("") }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = cityName,
+            onValueChange = { cityName = it },
+            label = { Text("Nombre de la ciudad") },
+            modifier = Modifier.width(300.dp).padding(vertical = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = countryName,
+            onValueChange = { countryName = it },
+            label = { Text("Nombre del país") },
+            modifier = Modifier.width(300.dp).padding(vertical = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = population,
+            onValueChange = { population = it },
+            label = { Text("Población") },
+            modifier = Modifier.width(300.dp).padding(vertical = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        CityModuleButton("Cargar una ciudad capital", onClick = {
+            if (cityName.isNotEmpty() && countryName.isNotEmpty() && population.isNotEmpty()) {
+                val result = dbHelper.insertCity(cityName, countryName, population.toLongOrNull() ?: 0)
+                operationResult = if (result != -1L) "Ciudad agregada exitosamente" else "Error al agregar la ciudad"
+                scope.launch {
+                    snackbarHostState.showSnackbar(operationResult)
+                }
+            } else {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Por favor, complete todos los campos")
+                }
+            }
+        })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        CityModuleButton("Consultar ciudad por nombre", onClick = {
+            if (cityName.isNotEmpty()) {
+                val city = dbHelper.getCityByName(cityName)
+                operationResult = if (city != null) {
+                    "Ciudad: ${city.name}, País: ${city.country}, Población: ${city.population}"
+                } else {
+                    "Ciudad no encontrada"
+                }
+                scope.launch {
+                    snackbarHostState.showSnackbar(operationResult)
+                }
+            } else {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Por favor, ingrese el nombre de la ciudad")
+                }
+            }
+        })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        CityModuleButton("Borrar ciudad por su nombre", onClick = {
+            if (cityName.isNotEmpty()) {
+                val result = dbHelper.deleteCity(cityName)
+                operationResult = if (result > 0) "Ciudad eliminada exitosamente" else "Ciudad no encontrada"
+                scope.launch {
+                    snackbarHostState.showSnackbar(operationResult)
+                }
+            } else {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Por favor, ingrese el nombre de la ciudad")
+                }
+            }
+        })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        CityModuleButton("Borrar todas las ciudades de un país", onClick = {
+            if (countryName.isNotEmpty()) {
+                val result = dbHelper.deleteCitiesByCountry(countryName)
+                operationResult = if (result > 0) "Ciudades eliminadas exitosamente" else "No se encontraron ciudades para el país"
+                scope.launch {
+                    snackbarHostState.showSnackbar(operationResult)
+                }
+            } else {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Por favor, ingrese el nombre del país")
+                }
+            }
+        })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        CityModuleButton("Modificar la población de una ciudad", onClick = {
+            if (cityName.isNotEmpty() && population.isNotEmpty()) {
+                val result = dbHelper.updateCityPopulation(cityName, population.toLongOrNull() ?: 0)
+                operationResult = if (result > 0) "Población actualizada exitosamente" else "Ciudad no encontrada"
+                scope.launch {
+                    snackbarHostState.showSnackbar(operationResult)
+                }
+            } else {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Por favor, ingrese el nombre de la ciudad y la nueva población")
+                }
+            }
+        })
+    }
+}
+
+class CityDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+    companion object {
+        private const val DATABASE_VERSION = 1
+        private const val DATABASE_NAME = "CityDatabase.db"
+        private const val TABLE_CITIES = "cities"
+        private const val KEY_ID = "id"
+        private const val KEY_NAME = "name"
+        private const val KEY_COUNTRY = "country"
+        private const val KEY_POPULATION = "population"
+    }
+
+    override fun onCreate(db: SQLiteDatabase) {
+        val CREATE_CITIES_TABLE = ("CREATE TABLE " + TABLE_CITIES + "("
+                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT,"
+                + KEY_COUNTRY + " TEXT," + KEY_POPULATION + " INTEGER" + ")")
+        db.execSQL(CREATE_CITIES_TABLE)
+    }
+
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_CITIES")
+        onCreate(db)
+    }
+
+    fun insertCity(name: String, country: String, population: Long): Long {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put(KEY_NAME, name)
+        values.put(KEY_COUNTRY, country)
+        values.put(KEY_POPULATION, population)
+        val id = db.insert(TABLE_CITIES, null, values)
+        db.close()
+        return id
+    }
+
+    fun getCityByName(name: String): City? {
+        val db = this.readableDatabase
+        val cursor = db.query(TABLE_CITIES, arrayOf(KEY_ID, KEY_NAME, KEY_COUNTRY, KEY_POPULATION),
+            "$KEY_NAME=?", arrayOf(name), null, null, null, null)
+        var city: City? = null
+        if (cursor.moveToFirst()) {
+            city = City(
+                cursor.getInt(0),
+                cursor.getString(1),
+                cursor.getString(2),
+                cursor.getLong(3)
+            )
+        }
+        cursor.close()
+        return city
+    }
+
+    fun deleteCity(name: String): Int {
+        val db = this.writableDatabase
+        val result = db.delete(TABLE_CITIES, "$KEY_NAME=?", arrayOf(name))
+        db.close()
+        return result
+    }
+
+    fun deleteCitiesByCountry(country: String): Int {
+        val db = this.writableDatabase
+        val result = db.delete(TABLE_CITIES, "$KEY_COUNTRY=?", arrayOf(country))
+        db.close()
+        return result
+    }
+
+    fun updateCityPopulation(name: String, newPopulation: Long): Int {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put(KEY_POPULATION, newPopulation)
+        val result = db.update(TABLE_CITIES, values, "$KEY_NAME=?", arrayOf(name))
+        db.close()
+        return result
+    }
+}
+
+data class City(val id: Int, val name: String, val country: String, val population: Long)
 
 @Preview(showBackground = true)
 @Composable

@@ -20,7 +20,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.example.kotlin_random_number_and_city_manager.ui.theme.KotlinrandomnumberandcitymanagerTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -33,6 +32,38 @@ class MainActivity : ComponentActivity() {
                 Menu()
             }
         }
+    }
+}
+
+@Composable
+fun HeaderText(text: String) {
+    Text(
+        text = text,
+        fontSize = 38.sp,
+        lineHeight = 50.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(bottom = 50.dp)
+    )
+}
+
+@Composable
+fun ModuleButton(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .width(180.dp)
+            .height(50.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Black,
+            contentColor = White
+        )
+    ) {
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
@@ -120,11 +151,12 @@ fun Menu() {
                         }
                     }
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 ModuleButton("Volver al menú", onClick = {
                     selectedModule.value = "Seleccione un Módulo"
                     buttonsVisible.value = true
-                    resetGame(score, attempts, randomNumber)
                 })
             }else{
                 Spacer(modifier = Modifier.height(16.dp))
@@ -132,7 +164,6 @@ fun Menu() {
                 CityModuleButton("Cargar una ciudad capital", onClick = {
                     selectedModule.value = "Cargar una ciudad capital"
                     buttonsVisible.value = true
-                    resetGame(score, attempts, randomNumber)
                 })
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -140,7 +171,6 @@ fun Menu() {
                 CityModuleButton("Consultar ciudad por nombre" , onClick = {
                     selectedModule.value = "Consultar ciudad por nombre"
                     buttonsVisible.value = true
-                    resetGame(score, attempts, randomNumber)
                 })
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -148,22 +178,20 @@ fun Menu() {
                 CityModuleButton("Borrar ciudad por su nombre", onClick = {
                     selectedModule.value = "Borrar ciudad por su nombre"
                     buttonsVisible.value = true
-                    resetGame(score, attempts, randomNumber)
                 })
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                CityModuleButton("Borrar  todas las ciudades de un pais", onClick = {
+                CityModuleButton("Borrar todas las ciudades de un pais", onClick = {
                     selectedModule.value = "Borrar todas las ciudades de un pais"
                     buttonsVisible.value = true
-                    resetGame(score, attempts, randomNumber)
                 })
 
                 Spacer(modifier = Modifier.height(16.dp))
+
                 CityModuleButton("Modificar la población de una ciudad", onClick = {
                     selectedModule.value = "Modificar la población de una ciudad"
                     buttonsVisible.value = true
-                    resetGame(score, attempts, randomNumber)
                 })
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -171,7 +199,6 @@ fun Menu() {
                 ModuleButton("Volver al menú", onClick = {
                     selectedModule.value = "Seleccione un Módulo"
                     buttonsVisible.value = true
-                    resetGame(score, attempts, randomNumber)
                 })
             }
 
@@ -203,38 +230,6 @@ fun Menu() {
     }
 
     SnackbarHost(hostState = snackbarHostState)
-}
-
-@Composable
-fun HeaderText(text: String) {
-    Text(
-        text = text,
-        fontSize = 38.sp,
-        lineHeight = 50.sp,
-        fontWeight = FontWeight.Bold,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.padding(bottom = 50.dp)
-    )
-}
-
-@Composable
-fun ModuleButton(text: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .width(180.dp)
-            .height(50.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Black,
-            contentColor = White
-        )
-    ) {
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
 }
 
 @Composable

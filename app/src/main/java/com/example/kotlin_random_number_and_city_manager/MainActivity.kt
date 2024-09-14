@@ -477,3 +477,12 @@ class CityDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 }
 
+data class City(val id: Int, val name: String, val country: String, val population: Long)
+
+@Preview(showBackground = true)
+@Composable
+fun MenuPreview() {
+    KotlinrandomnumberandcitymanagerTheme {
+        Menu()
+    }
+}

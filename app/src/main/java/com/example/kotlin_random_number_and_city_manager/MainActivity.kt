@@ -92,7 +92,7 @@ fun CityModuleButton(text: String, onClick: () -> Unit) {
 
 @Composable
 fun Menu() {
-    val selectedModule = remember { mutableStateOf("Seleccione un Módulo") }
+    val selectedModule = remember { mutableStateOf("Seleccione un Módulo:") }
     val buttonsVisible = remember { mutableStateOf(true) }
     val score = remember { mutableStateOf(0) }
     val attempts = remember { mutableStateOf(0) }
@@ -144,7 +144,7 @@ fun Menu() {
                     },
                     onWrongGuess = {
                         scope.launch {
-                            snackbarHostState.showSnackbar("Incorrecto, intenta de nuevo", duration = SnackbarDuration.Short)
+                            snackbarHostState.showSnackbar("Incorrecto, intenta nuevamente", duration = SnackbarDuration.Short)
                         }
                     },
                     highestScore = highestScore,
@@ -192,13 +192,12 @@ fun Menu() {
                             contentColor = White
                         )
                     ) {
-                        Text("OK")
+                        Text("Ok")
                     }
                 }
             )
         }
     }
-
     SnackbarHost(hostState = snackbarHostState)
 }
 
@@ -238,7 +237,7 @@ fun GameModule(
         OutlinedTextField(
             value = userGuess.value,
             onValueChange = { userGuess.value = it },
-            label = { Text("Ingrese un número") },
+            label = { Text("Ingrese un número:") },
             modifier = Modifier
                 .width(200.dp)
         )
@@ -478,12 +477,3 @@ class CityDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 }
 
-data class City(val id: Int, val name: String, val country: String, val population: Long)
-
-@Preview(showBackground = true)
-@Composable
-fun MenuPreview() {
-    KotlinrandomnumberandcitymanagerTheme {
-        Menu()
-    }
-}

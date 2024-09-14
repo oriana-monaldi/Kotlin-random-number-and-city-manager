@@ -120,53 +120,61 @@ fun Menu() {
                         }
                     }
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+                ModuleButton("Volver al menú", onClick = {
+                    selectedModule.value = "Seleccione un Módulo"
+                    buttonsVisible.value = true
+                    resetGame(score, attempts, randomNumber)
+                })
+            }else{
+                Spacer(modifier = Modifier.height(16.dp))
+
+                CityModuleButton("Cargar una ciudad capital", onClick = {
+                    selectedModule.value = "Cargar una ciudad capital"
+                    buttonsVisible.value = true
+                    resetGame(score, attempts, randomNumber)
+                })
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                CityModuleButton("Consultar ciudad por nombre" , onClick = {
+                    selectedModule.value = "Consultar ciudad por nombre"
+                    buttonsVisible.value = true
+                    resetGame(score, attempts, randomNumber)
+                })
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                CityModuleButton("Borrar ciudad por su nombre", onClick = {
+                    selectedModule.value = "Borrar ciudad por su nombre"
+                    buttonsVisible.value = true
+                    resetGame(score, attempts, randomNumber)
+                })
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                CityModuleButton("Borrar  todas las ciudades de un pais", onClick = {
+                    selectedModule.value = "Borrar todas las ciudades de un pais"
+                    buttonsVisible.value = true
+                    resetGame(score, attempts, randomNumber)
+                })
+
+                Spacer(modifier = Modifier.height(16.dp))
+                CityModuleButton("Modificar la población de una ciudad", onClick = {
+                    selectedModule.value = "Modificar la población de una ciudad"
+                    buttonsVisible.value = true
+                    resetGame(score, attempts, randomNumber)
+                })
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                ModuleButton("Volver al menú", onClick = {
+                    selectedModule.value = "Seleccione un Módulo"
+                    buttonsVisible.value = true
+                    resetGame(score, attempts, randomNumber)
+                })
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CityModuleButton("Cargar una ciudad capital", onClick = {
-                selectedModule.value = "Cargar una ciudad capital"
-                buttonsVisible.value = true
-                resetGame(score, attempts, randomNumber)
-            })
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CityModuleButton("Consultar ciudad por nombre" , onClick = {
-                selectedModule.value = "Consultar ciudad por nombre"
-                buttonsVisible.value = true
-                resetGame(score, attempts, randomNumber)
-            })
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CityModuleButton("Borrar ciudad por su nombre", onClick = {
-                selectedModule.value = "Borrar ciudad por su nombre"
-                buttonsVisible.value = true
-                resetGame(score, attempts, randomNumber)
-            })
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CityModuleButton("Borrar todas las ciudades de un pais", onClick = {
-                selectedModule.value = "Borrar todas las ciudades de un pais"
-                buttonsVisible.value = true
-                resetGame(score, attempts, randomNumber)
-            })
-
-            Spacer(modifier = Modifier.height(16.dp))
-            CityModuleButton("Modificar la población de una ciudad", onClick = {
-                selectedModule.value = "Modificar la población de una ciudad"
-                buttonsVisible.value = true
-                resetGame(score, attempts, randomNumber)
-            })
-
-            Spacer(modifier = Modifier.height(16.dp))
-            CityModuleButton("Volver al menú", onClick = {
-                selectedModule.value = "Seleccione un Módulo"
-                buttonsVisible.value = true
-                resetGame(score, attempts, randomNumber)
-            })
         }
 
         if (showGameOverDialog.value) {
